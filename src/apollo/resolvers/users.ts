@@ -2,6 +2,7 @@ import { MyContext } from "apollo/context";
 import { User } from "../../database/entities/user";
 import { Resolver, Mutation, Arg, InputType, Field, Ctx, ObjectType, Query } from "type-graphql";
 import argon2 from "argon2";
+import { COOKIE_NAME } from "src/config/config";
 // import { EntityManager } from '@mikro-orm/postgresql';
 
 
@@ -86,9 +87,9 @@ export class UserResolver{
       // }).returning("*");
       // user = result[0]
       await em.persistAndFlush(user);
-    } catch (err) {
+    } catch (err: unknown ) {
       // duplicate username error
-      if (err.code === "23505")
+      if ((err as any).code === "23505")
         return {
           errors: [{
             field: "username",
@@ -131,5 +132,21 @@ export class UserResolver{
     req.session.userId = user.id
 
     return { user };
+  }
+
+  @Mutation(() => Boolean)
+  logout(
+    @Ctx() {req, res} :MyContext
+  ) {
+    new Promise(resolve => req.session.destroy(err => {
+      if (err) {
+        console.log(err);
+        resolve(false)
+        return;
+      }
+
+      res.clearCookie(COOKIE_NAME);
+      resolve(true);
+    }))
   }
 }
