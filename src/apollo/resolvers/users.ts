@@ -2,7 +2,7 @@ import { MyContext } from "apollo/context";
 import { User } from "../../database/entities/user";
 import { Resolver, Mutation, Arg, InputType, Field, Ctx, ObjectType, Query } from "type-graphql";
 import argon2 from "argon2";
-import { COOKIE_NAME } from "src/config/config";
+import { COOKIE_NAME } from "../../config/config";
 // import { EntityManager } from '@mikro-orm/postgresql';
 
 
@@ -138,7 +138,7 @@ export class UserResolver{
   logout(
     @Ctx() {req, res} :MyContext
   ) {
-    new Promise(resolve => req.session.destroy(err => {
+    return new Promise(resolve => req.session.destroy(err => {
       if (err) {
         console.log(err);
         resolve(false)
